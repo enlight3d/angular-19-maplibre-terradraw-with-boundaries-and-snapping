@@ -1,27 +1,75 @@
-# Sandbox
+# Angular 19 MapLibre with TerraDraw
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.1.0.
+A modern Angular 19 application demonstrating the integration of MapLibre GL JS with TerraDraw for creating interactive maps with boundary detection and snapping features.
 
-## Development server
+## 🌟 Features
 
-Run `ng serve` for a dev server. Navigate to http://localhost:4200. The application will automatically reload if you change any of the source files.
+- **MapLibre GL JS Integration**: Vector tile rendering with custom styling
+- **TerraDraw Tools**: Advanced drawing capabilities for geospatial applications
+- **Boundary Detection**: Intelligent detection of geographic boundaries
+- **Snapping Functionality**: Precision drawing with snap-to features
+- **Angular 19**: Built with the latest Angular framework features
 
-## Code scaffolding
+## 🚀 Getting Started
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### Prerequisites
 
-## Build
+- Node.js (v16 or higher)
+- npm or yarn
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+### Installation
 
-## Running unit tests
+```bash
+# Clone the repository
+git clone https://github.com/enlight3d/angular-19-maplibre-terradraw.git
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+# Navigate to the project directory
+cd angular-19-maplibre-terradraw
 
-## Running end-to-end tests
+# Install dependencies
+npm install
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+### Development Server
 
-## Further help
+```bash
+ng serve
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+Navigate to http://localhost:4200/. The application will automatically reload if you change any of the source files.
+
+## 🛠️ Building for Production
+
+```bash
+ng build
+```
+
+The build artifacts will be stored in the `dist/` directory.
+
+## 📖 Usage Examples
+
+[Add a few screenshots or code examples showing how to use the main features]
+
+## 🧪 Running Tests
+
+```bash
+# Unit tests
+ng test
+
+# End-to-end tests
+ng e2e
+```
+
+## 📚 Documentation
+
+- [MapLibre GL JS Documentation](https://maplibre.org/maplibre-gl-js-docs/api/)
+- [TerraDraw Documentation](https://docs.terradraw.io/)
+- [Angular Documentation](https://angular.dev/)
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/angular-19-maplibre-terradraw/issues).
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
