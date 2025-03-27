@@ -1,11 +1,4 @@
-import {
-  effect,
-  inject,
-  Injectable,
-  Injector,
-  signal,
-  Signal,
-} from '@angular/core';
+import { effect, Injectable, Injector, signal, Signal } from '@angular/core';
 import { point } from '@turf/helpers';
 import * as turf from '@turf/turf';
 import {
@@ -447,9 +440,20 @@ export class TerraDrawService {
     boundary?: Polygon
   ): Position | undefined {
     if (!this.snapToBoundary() && !this.snapToFeatures()) return undefined;
-    const currentPoint: Position = [event.lng, event.lat];
+
+    // Ensure coordinates are valid numbers
+    const currentPoint: Position = [
+      typeof event.lng === 'number' ? event.lng : parseFloat(String(event.lng)),
+      typeof event.lat === 'number' ? event.lat : parseFloat(String(event.lat)),
+    ];
+
+    // Check for NaN values
+    if (isNaN(currentPoint[0]) || isNaN(currentPoint[1])) {
+      console.error('Invalid coordinates in event:', event);
+      return undefined;
+    }
+
     const currentPointFeature = turf.point(currentPoint);
-    console.log("currentPointFeature", currentPointFeature, currentPoint)
     const map = this.map();
     if (!map) return undefined;
 
@@ -457,31 +461,82 @@ export class TerraDrawService {
     let bestPixelDistance = Infinity;
 
     const processCandidateLine = (line: Feature<LineString>) => {
-      const candidate = turf.nearestPointOnLine(line, currentPointFeature);
+      // Validate line coordinates before processing
       if (
-        !candidate ||
-        !candidate.properties ||
-        typeof candidate.properties.dist !== 'number'
-      )
+        !line.geometry ||
+        !Array.isArray(line.geometry.coordinates) ||
+        line.geometry.coordinates.length < 2
+      ) {
+        console.warn('Invalid line geometry:', line);
         return;
-      const candidateCoord = candidate.geometry.coordinates as [number, number];
-      const screenPoint = map.project(currentPoint as [number, number]);
-      const candidateScreenPoint = map.project(candidateCoord);
-      const pixelDistance = Math.sqrt(
-        Math.pow(screenPoint.x - candidateScreenPoint.x, 2) +
-          Math.pow(screenPoint.y - candidateScreenPoint.y, 2)
+      }
+
+      // Ensure each coordinate in the line is valid
+      const validLineCoords = line.geometry.coordinates.every(
+        (coord) =>
+          Array.isArray(coord) &&
+          coord.length >= 2 &&
+          typeof coord[0] === 'number' &&
+          typeof coord[1] === 'number' &&
+          !isNaN(coord[0]) &&
+          !isNaN(coord[1])
       );
-      if (pixelDistance < bestPixelDistance) {
-        bestPixelDistance = pixelDistance;
-        bestCandidate = candidate;
+
+      if (!validLineCoords) {
+        console.warn(
+          'Line contains invalid coordinates:',
+          line.geometry.coordinates
+        );
+        return;
+      }
+
+      try {
+        const candidate = turf.nearestPointOnLine(line, currentPointFeature);
+        if (
+          !candidate ||
+          !candidate.properties ||
+          typeof candidate.properties.dist !== 'number' ||
+          !candidate.geometry ||
+          !Array.isArray(candidate.geometry.coordinates) ||
+          candidate.geometry.coordinates.length < 2 ||
+          typeof candidate.geometry.coordinates[0] !== 'number' ||
+          typeof candidate.geometry.coordinates[1] !== 'number'
+        ) {
+          return;
+        }
+
+        const candidateCoord = candidate.geometry.coordinates as [
+          number,
+          number
+        ];
+        const screenPoint = map.project(currentPoint as [number, number]);
+        const candidateScreenPoint = map.project(candidateCoord);
+        const pixelDistance = Math.sqrt(
+          Math.pow(screenPoint.x - candidateScreenPoint.x, 2) +
+            Math.pow(screenPoint.y - candidateScreenPoint.y, 2)
+        );
+
+        if (pixelDistance < bestPixelDistance) {
+          bestPixelDistance = pixelDistance;
+          bestCandidate = candidate;
+        }
+      } catch (error) {
+        console.error('Error processing candidate line:', error, line);
       }
     };
 
     // Candidats du boundary
     if (this.snapToBoundary() && boundary) {
-      const boundaryLine = turf.lineString(boundary.coordinates[0]);
-      processCandidateLine(boundaryLine);
+      try {
+        if (boundary.coordinates && Array.isArray(boundary.coordinates[0])) {
+          const boundaryLine = turf.lineString(boundary.coordinates[0]);
+          processCandidateLine(boundaryLine);
+        }
+      } catch (error) {
+        console.error('Error processing boundary:', error, boundary);
+      }
     }
+
     // Candidats issus des features dessinées
     if (this.snapToFeatures()) {
       const terradraw = this.draw()?.getTerraDrawInstance();
@@ -492,9 +547,14 @@ export class TerraDrawService {
           if (feature.properties?.['_terraformer']) return false;
           return true;
         });
+
         drawableFeatures.forEach((feature) => {
-          const candidateLines = this.featureToLines(feature);
-          candidateLines.forEach((line) => processCandidateLine(line));
+          try {
+            const candidateLines = this.featureToLines(feature);
+            candidateLines.forEach((line) => processCandidateLine(line));
+          } catch (error) {
+            console.error('Error processing feature:', error, feature);
+          }
         });
       }
     }
@@ -505,6 +565,7 @@ export class TerraDrawService {
       );
       return (bestCandidate as Feature<Point>).geometry.coordinates;
     }
+
     this.nearestSnapPoint.set(null);
     return undefined;
   }
