@@ -1,0 +1,21 @@
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  /* height: 100%;
+  width: 100%; */
+}
+
+.boundary-controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0;
+  gap: 10px;
+}
+
+mgl-map {
+  height: 100%;
+  width: 100%;
+}
